@@ -57,7 +57,7 @@ class FooterCommandTest {
 
     @Test
     void rejectsRemoteUri(QuarkusMainLauncher launcher) {
-        LaunchResult result = launcher.launch("footer", "-f", "s3://bucket/data.parquet");
+        LaunchResult result = launcher.launch("footer", "-f", "gs://bucket/data.parquet");
 
         assertThat(result.exitCode()).isNotZero();
         assertThat(result.getErrorOutput()).contains("not implemented yet");

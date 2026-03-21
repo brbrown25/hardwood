@@ -56,7 +56,7 @@ class InspectDictionaryCommandTest {
 
     @Test
     void rejectsRemoteUri(QuarkusMainLauncher launcher) {
-        LaunchResult result = launcher.launch("inspect", "dictionary", "-f", "s3://bucket/data.parquet",
+        LaunchResult result = launcher.launch("inspect", "dictionary", "-f", "gs://bucket/data.parquet",
                 "--column", "id");
 
         assertThat(result.exitCode()).isNotZero();

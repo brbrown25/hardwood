@@ -44,13 +44,13 @@ public class InspectDictionaryCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        if (fileMixin.isRemoteUri()) {
+        if (fileMixin.toInputFile() == null) {
             return CommandLine.ExitCode.SOFTWARE;
         }
 
         FileMetaData metadata;
         FileSchema schema;
-        try (ParquetFileReader reader = ParquetFileReader.open(InputFile.of(fileMixin.toPath()))) {
+        try (ParquetFileReader reader = ParquetFileReader.open(fileMixin.toInputFile())) {
             metadata = reader.getFileMetaData();
             schema = reader.getFileSchema();
         }
@@ -68,7 +68,7 @@ public class InspectDictionaryCommand implements Callable<Integer> {
             return CommandLine.ExitCode.SOFTWARE;
         }
 
-        InputFile inputFile = InputFile.of(fileMixin.toPath());
+        InputFile inputFile = fileMixin.toInputFile();
         try (HardwoodContextImpl context = HardwoodContextImpl.create(1)) {
             inputFile.open();
             printDictionaries(metadata, columnSchema, context, inputFile);
@@ -107,7 +107,7 @@ public class InspectDictionaryCommand implements Callable<Integer> {
 
             PageScanner scanner = new PageScanner(columnSchema, chunk, context,
                     chunkData, chunkStart, indexBuffers.forColumn(columnSchema.columnIndex()),
-                    rgIdx, fileMixin.toPath().toString());
+                    rgIdx, fileMixin.file);
             List<PageInfo> pages = scanner.scanPages();
 
             Dictionary dictionary = pages.isEmpty() ? null : pages.get(0).dictionary();

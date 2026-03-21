@@ -55,6 +55,10 @@
       <groupId>dev.hardwood</groupId>
       <artifactId>hardwood-core</artifactId>
     </dependency>
+    <dependency>
+      <groupId>dev.hardwood</groupId>
+      <artifactId>hardwood-s3</artifactId>
+    </dependency>
     <!-- Test dependencies -->
     <dependency>
       <groupId>org.junit.jupiter</groupId>

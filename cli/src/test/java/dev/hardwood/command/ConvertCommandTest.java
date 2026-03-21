@@ -96,7 +96,7 @@ class ConvertCommandTest {
 
     @Test
     void rejectsRemoteUri(QuarkusMainLauncher launcher) {
-        LaunchResult result = launcher.launch("convert", "-f", "s3://bucket/data.parquet", "--to", "csv");
+        LaunchResult result = launcher.launch("convert", "-f", "gs://bucket/data.parquet", "--to", "csv");
 
         assertThat(result.exitCode()).isNotZero();
         assertThat(result.getErrorOutput()).contains("not implemented yet");

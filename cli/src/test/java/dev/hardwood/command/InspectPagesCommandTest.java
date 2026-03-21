@@ -68,7 +68,7 @@ class InspectPagesCommandTest {
 
     @Test
     void rejectsRemoteUri(QuarkusMainLauncher launcher) {
-        LaunchResult result = launcher.launch("inspect", "pages", "-f", "s3://bucket/data.parquet");
+        LaunchResult result = launcher.launch("inspect", "pages", "-f", "gs://bucket/data.parquet");
 
         assertThat(result.exitCode()).isNotZero();
         assertThat(result.getErrorOutput()).contains("not implemented yet");

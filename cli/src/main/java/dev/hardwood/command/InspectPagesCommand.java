@@ -42,13 +42,13 @@ public class InspectPagesCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        if (fileMixin.isRemoteUri()) {
+        if (fileMixin.toInputFile() == null) {
             return CommandLine.ExitCode.SOFTWARE;
         }
 
         FileMetaData metadata;
         FileSchema schema;
-        try (ParquetFileReader reader = ParquetFileReader.open(InputFile.of(fileMixin.toPath()))) {
+        try (ParquetFileReader reader = ParquetFileReader.open(fileMixin.toInputFile())) {
             metadata = reader.getFileMetaData();
             schema = reader.getFileSchema();
         }
@@ -67,7 +67,7 @@ public class InspectPagesCommand implements Callable<Integer> {
             }
         }
 
-        InputFile inputFile = InputFile.of(fileMixin.toPath());
+        InputFile inputFile = fileMixin.toInputFile();
         try {
             inputFile.open();
             printPages(metadata, schema, inputFile);

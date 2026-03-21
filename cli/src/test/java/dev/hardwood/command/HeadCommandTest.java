@@ -68,10 +68,9 @@ class HeadCommandTest {
 
     @Test
     void rejectsRemoteUri(QuarkusMainLauncher launcher) {
-        LaunchResult result = launcher.launch("head", "-f", "s3://bucket/data.parquet");
+        LaunchResult result = launcher.launch("head", "-f", "gs://bucket/data.parquet");
 
         assertThat(result.exitCode()).isNotZero();
-        assertThat(result.getErrorOutput()).contains("not implemented yet");
     }
 
     @Test

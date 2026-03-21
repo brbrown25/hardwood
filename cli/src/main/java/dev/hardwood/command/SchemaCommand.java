@@ -42,11 +42,12 @@ public class SchemaCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        if (fileMixin.isRemoteUri()) {
+        InputFile inputFile = fileMixin.toInputFile();
+        if (inputFile == null) {
             return CommandLine.ExitCode.SOFTWARE;
         }
 
-        try (ParquetFileReader reader = ParquetFileReader.open(InputFile.of(fileMixin.toPath()))) {
+        try (ParquetFileReader reader = ParquetFileReader.open(inputFile)) {
             FileSchema schema = reader.getFileSchema();
 
             String output = switch (format) {

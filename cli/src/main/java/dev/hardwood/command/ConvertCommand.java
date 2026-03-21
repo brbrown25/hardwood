@@ -48,11 +48,12 @@ public class ConvertCommand implements Callable<Integer> {
 
     @Override
     public Integer call() {
-        if (fileMixin.isRemoteUri()) {
+        InputFile inputFile = fileMixin.toInputFile();
+        if (inputFile == null) {
             return CommandLine.ExitCode.SOFTWARE;
         }
 
-        try (ParquetFileReader reader = ParquetFileReader.open(InputFile.of(fileMixin.toPath()))) {
+        try (ParquetFileReader reader = ParquetFileReader.open(inputFile)) {
             FileSchema fileSchema = reader.getFileSchema();
             String[] allHeaders = RowTable.topLevelFieldNames(fileSchema);
             int[] columnIndices = resolveColumnIndices(allHeaders);
