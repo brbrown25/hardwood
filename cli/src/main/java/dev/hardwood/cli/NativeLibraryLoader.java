@@ -41,7 +41,8 @@ public final class NativeLibraryLoader {
     public static boolean inImageCode() {
         try {
             Class<?> c = Class.forName("org.graalvm.nativeimage.ImageInfo");
-            return Boolean.TRUE.equals(c.getMethod("inImageCode").invoke(null));
+            Object result = c.getMethod("inImageCode").invoke(null);
+            return result instanceof Boolean b && b;
         }
         catch (ReflectiveOperationException e) {
             return false;
@@ -52,15 +53,7 @@ public final class NativeLibraryLoader {
      * Loads zstd-jni native library. No-op on JVM (zstd-jni loads from the JAR).
      */
     public static void loadZstd() {
-        if (!inImageCode()) {
-            return;
-        }
-        Path libDir = resolveLibDir();
-        if (libDir == null) {
-            return;
-        }
-        loadNative("zstd",
-                resolveLibFile(libDir, osArchFragment(Codec.ZSTD), "libzstd-jni-" + ZSTD_JNI_VERSION, "libzstd-jni-"),
+        loadCodec("zstd", Codec.ZSTD, "libzstd-jni-" + ZSTD_JNI_VERSION, "libzstd-jni-",
                 NativeLibraryLoader::assumeZstdLoaded);
     }
 
@@ -68,20 +61,18 @@ public final class NativeLibraryLoader {
      * Loads lz4-java native library. No-op on JVM (lz4-java loads from the JAR).
      */
     public static void loadLz4() {
-        if (!inImageCode()) {
-            return;
-        }
-        Path libDir = resolveLibDir();
-        if (libDir == null) {
-            return;
-        }
-        loadNative("lz4", resolveLibFile(libDir, osArchFragment(Codec.LZ4), "liblz4-java", "liblz4-java"), null);
+        loadCodec("lz4", Codec.LZ4, "liblz4-java", "liblz4-java", null);
     }
 
     /**
      * Loads snappy-java native library. No-op on JVM (snappy-java loads from the JAR).
      */
     public static void loadSnappy() {
+        loadCodec("snappy", Codec.SNAPPY, "libsnappyjava", "libsnappyjava", null);
+    }
+
+    private static void loadCodec(String name, Codec codec, String exactBaseName, String scanPrefix,
+            Runnable postLoad) {
         if (!inImageCode()) {
             return;
         }
@@ -89,7 +80,7 @@ public final class NativeLibraryLoader {
         if (libDir == null) {
             return;
         }
-        loadNative("snappy", resolveLibFile(libDir, osArchFragment(Codec.SNAPPY), "libsnappyjava", "libsnappyjava"), null);
+        loadNative(name, resolveLibFile(libDir, osArchFragment(codec), exactBaseName, scanPrefix), postLoad);
     }
 
     private static void loadNative(String name, Path libFile, Runnable postLoad) {
