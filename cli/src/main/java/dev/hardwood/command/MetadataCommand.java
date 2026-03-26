@@ -8,6 +8,7 @@
 package dev.hardwood.command;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 
@@ -64,22 +65,19 @@ public class MetadataCommand implements Callable<Integer> {
     private void printRowGroup(int index, RowGroup rg) {
         spec.commandLine().getOut().printf("Row Group %d  (%d rows, %s uncompressed)%n",
                 index, rg.numRows(), Sizes.format(rg.totalByteSize()));
-        spec.commandLine().getOut().printf("  %-30s  %-25s  %-14s  %-10s  %s%n",
-                "Column", "Type", "Codec", "Compressed", "Uncompressed");
 
+        String[] headers = {"Column", "Type", "Codec", "Compressed", "Uncompressed"};
+        List<String[]> rows = new ArrayList<>();
         for (ColumnChunk cc : rg.columns()) {
-            printColumnChunk(cc.metaData());
+            ColumnMetaData cmd = cc.metaData();
+            rows.add(new String[]{
+                    Sizes.columnPath(cmd),
+                    cmd.type().toString(),
+                    cmd.codec().toString(),
+                    Sizes.format(cmd.totalCompressedSize()),
+                    Sizes.format(cmd.totalUncompressedSize())
+            });
         }
-        spec.commandLine().getOut().println();
-    }
-
-    private void printColumnChunk(ColumnMetaData cmd) {
-        String path = Sizes.columnPath(cmd);
-        spec.commandLine().getOut().printf("  %-30s  %-25s  %-14s  %-10s  %s%n",
-                path,
-                cmd.type(),
-                cmd.codec(),
-                Sizes.format(cmd.totalCompressedSize()),
-                Sizes.format(cmd.totalUncompressedSize()));
+        spec.commandLine().getOut().println(RowTable.renderTable(headers, rows));
     }
 }
