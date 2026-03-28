@@ -2,6 +2,8 @@ name: Trigger documentation publish
 
 on:
   push:
+    branches: [main]
+    paths: ['docs/**']
     tags: ['v*']
 
 jobs:
@@ -14,12 +16,18 @@ jobs:
           GH_TOKEN: ${{ secrets.DOCS_DISPATCH_TOKEN }}
           VERSION: ${{ github.ref_name }}
         run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then
+            VERSION_LABEL="${VERSION#v}"
+          else
+            VERSION_LABEL="dev"
+          fi
           gh api repos/hardwood-hq/hardwood-hq.github.io/dispatches \
             --field event_type=publish-docs \
             --field client_payload="$(cat <<EOF
           {
             "source_ref": "${{ github.sha }}",
-            "version": "${VERSION#v}"
+            "version": "$VERSION_LABEL",
+            "update_latest": true
           }
           EOF
           )"
