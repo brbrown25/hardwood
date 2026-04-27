@@ -18,6 +18,9 @@ Supported annotations:
 - INTERVAL   — `annotate_column_as_interval`
 - VARIANT    — `annotate_group_as_variant`
 
+Modern-only fixture helpers (strip legacy annotations so only `logicalType` remains):
+- `strip_converted_type` — for LIST / MAP outer groups.
+
 Only the subset of parquet.thrift that PyArrow emits, plus the LogicalType
 union, is modelled in the embedded IDL.
 """
@@ -277,6 +280,7 @@ def annotate_group_as_variant(path: str, group_name: str, spec_version: int = 1)
 
     _write_parquet_footer(path, data_before_footer, file_metadata)
 
+
 def annotate_column_as_interval(path: str, column_name: str, *, legacy_only: bool = False) -> None:
     """Rewrite `path` so that the named FIXED_LEN_BYTE_ARRAY(12) column carries the INTERVAL annotation.
 
@@ -302,6 +306,7 @@ def annotate_column_as_interval(path: str, column_name: str, *, legacy_only: boo
 
     _write_parquet_footer(path, data_before_footer, file_metadata)
 
+
 def _find_outer_group(file_metadata, field_name: str):
     """Return the SchemaElement for the top-level group named `field_name`."""
     for el in file_metadata.schema:
@@ -315,6 +320,11 @@ def strip_converted_type(src: str, dst: str, field_name: str) -> None:
 
     The result carries only `logicalType` (modern-only annotation), which is the
     case a reader must handle when the writer omits the legacy annotation.
+
+    PyArrow 24.0.0 (pinned in `requirements.txt`) does not emit
+    `MAP_KEY_VALUE` on the inner `key_value` group, so for MAP fixtures only
+    the outer group's `converted_type` needs clearing for the result to be
+    fully modern-only end-to-end.
     """
     shutil.copy2(src, dst)
     data, md = _read_parquet_footer(dst)

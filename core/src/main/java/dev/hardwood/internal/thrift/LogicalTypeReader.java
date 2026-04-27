@@ -79,7 +79,7 @@ public class LogicalTypeReader {
                         yield new LogicalType.UuidType();
                     }
                     case 16 -> readVariantType(reader);
-                    // Skip unsupported types (NullType, Float16Type, etc..)
+                    // Skip unsupported types (NullType, Float16Type, etc.)
                     default -> {
                         reader.skipField(header.type());
                         yield null;

@@ -23,7 +23,13 @@ import dev.hardwood.schema.SchemaNode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Testing the modern List variant
+/// End-to-end recognition of the LIST logical-type annotation, exercised in
+/// both forms a Parquet writer may emit:
+///
+/// - `both annotations` — legacy `ConvertedType.LIST` plus modern
+///   `LogicalType.ListType` (PyArrow's default output).
+/// - `modern-only` — `LogicalType.ListType` only, no `ConvertedType`. This is
+///   the regression case for `LogicalTypeReader` field ID 3.
 class ListLogicalTypeRecognitionTest {
 
     static Stream<Arguments> allVariants() {
@@ -59,7 +65,7 @@ class ListLogicalTypeRecognitionTest {
 
     @ParameterizedTest(name = "{0}")
     @MethodSource("allVariants")
-    void testListElementReachableOnceIsListIsCorrect(Path file) throws IOException {
+    void testGetListElementReturnsElement(Path file) throws IOException {
         try (ParquetFileReader reader = ParquetFileReader.open(InputFile.of(file))) {
             SchemaNode.GroupNode tagsGroup =
                     (SchemaNode.GroupNode) reader.getFileSchema().getRootNode().children().get(1);

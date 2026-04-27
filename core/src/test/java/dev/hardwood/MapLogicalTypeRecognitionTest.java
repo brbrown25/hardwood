@@ -23,7 +23,13 @@ import dev.hardwood.schema.SchemaNode;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
-// Testing the modern Map variant
+/// End-to-end recognition of the MAP logical-type annotation, exercised in
+/// both forms a Parquet writer may emit:
+///
+/// - `both annotations` — legacy `ConvertedType.MAP` plus modern
+///   `LogicalType.MapType` (PyArrow's default output).
+/// - `modern-only` — `LogicalType.MapType` only, no `ConvertedType`. This is
+///   the regression case for `LogicalTypeReader` field ID 2.
 class MapLogicalTypeRecognitionTest {
 
     static Stream<Arguments> allVariants() {
@@ -54,6 +60,21 @@ class MapLogicalTypeRecognitionTest {
             SchemaNode.GroupNode attrsGroup =
                     (SchemaNode.GroupNode) reader.getFileSchema().getRootNode().children().get(1);
             assertThat(attrsGroup.logicalType()).isInstanceOf(LogicalType.MapType.class);
+        }
+    }
+
+    @ParameterizedTest(name = "{0}")
+    @MethodSource("allVariants")
+    void testKeyValueChildrenReachable(Path file) throws IOException {
+        try (ParquetFileReader reader = ParquetFileReader.open(InputFile.of(file))) {
+            SchemaNode.GroupNode attrsGroup =
+                    (SchemaNode.GroupNode) reader.getFileSchema().getRootNode().children().get(1);
+            assertThat(attrsGroup.children()).hasSize(1);
+            SchemaNode.GroupNode keyValue = (SchemaNode.GroupNode) attrsGroup.children().get(0);
+            assertThat(keyValue.name()).isEqualTo("key_value");
+            assertThat(keyValue.children()).hasSize(2);
+            assertThat(keyValue.children().get(0).name()).isEqualTo("key");
+            assertThat(keyValue.children().get(1).name()).isEqualTo("value");
         }
     }
 }
