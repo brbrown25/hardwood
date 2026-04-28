@@ -88,8 +88,8 @@ public class FileMixin {
             builder.region(region);
         }
         else if (endpointUrl == null) {
-            throw new IllegalStateException(
-                    "Unable to determine AWS region. Set AWS_REGION or configure a default region in ~/.aws/config");
+            throw new CommandLine.ParameterException(spec.commandLine(),
+                    "Unable to determine AWS region. Set AWS_REGION or configure a default region in ~/.aws/config.");
         }
 
         S3Source source = builder.build();
